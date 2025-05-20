@@ -1,0 +1,40 @@
+# Ignore build results
+bin/
+obj/
+
+# Ignore user-specific files
+*.user
+*.suo
+
+# Ignore Rider/JetBrains
+.idea/
+
+# Ignore Visual Studio
+.vs/
+
+# Ignore logs
+*.log
+
+# Ignore publish outputs
+publish/
+
+# ASP.NET static files (optional)
+# wwwroot/lib/
+
+# Ignore secrets/configs
+appsettings*.json
+!appsettings.Template.json
+
+# Others
+*.dbmdl
+*.pdb
+*.cache
+project.lock.json
+project.fragment.lock.json
+
+# Node modules if using JS/TS frontend
+node_modules/
+
+# Ignore environment files
+.env
+.env.*
