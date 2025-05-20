@@ -1,0 +1,119 @@
+﻿@model List<DocumentsProject.Web.ViewModel.DocumentsViewModel>
+
+<div class="container">
+    <h1 class="text-center mb-4">Documents List</h1>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Document ID</th>
+                <th>Document Name</th>
+                <th>Uploaded Time</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model == null || !Model.Any())
+            {
+                <tr>
+                    <td colspan="4" class="text-center">No documents found.</td>
+                </tr>
+            }
+            else
+            {
+                foreach (var document in Model)
+                {
+                    <tr>
+                        <td>@document.DocId</td>
+                        <td>@document.DocumentName</td>
+                        <td>@document.DocumentUploadedTime?.ToString("g")</td>
+                        <td>
+                            <button class="btn btn-success btn-sm" onclick="downloadDocument('@document.DocId')">Download</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteDocument('@document.DocId')">Delete</button>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    function downloadDocument(docId) {
+        var fileId = docId;
+        $.ajax({
+            url: '@Url.Action("DownloadDocument", "DocumentDownload")',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(fileId),
+            success: function (data) {
+                console.log(data);
+                // Create a temporary link element
+                debugger;
+                var fileData = atob(data.fileData);
+                var blob = new Blob([fileData], { type: data.contentType });
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = data.fileName;
+
+                // Append the link to the body
+                document.body.appendChild(a);
+
+                // Trigger a click on the link to start the download
+                a.click();
+
+                // Remove the link from the body
+                document.body.removeChild(a);
+
+                // Release the object URL
+                window.URL.revokeObjectURL(url);
+            },
+            error: function (error) {
+                // Handle errors
+                console.error('Error downloading file:', error.responseText);
+                swal({ type: 'info', title: "Download file", text: "Failed to download file", showCancelButton: false, closeOnConfirm: true }, function (isConfirm) {
+                    if (isConfirm) {
+                    }
+                });
+            }
+        });
+    }
+
+    function deleteDocument(docId) {
+        if (confirm('Are you sure you want to delete this document?')) {
+            $.ajax({
+                url: '@Url.Action("DeleteDocument", "MyUploads")',
+                type: 'POST',
+                data: { docId: docId },
+                success: function (response) {
+                    if (response.success) {
+                        swal({
+                            type: 'info',
+                            title: "Login Info",
+                            text: response.message,  // Show success message
+                            showCancelButton: false,
+                            closeOnConfirm: true
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                location.reload();  // Redirect to another page
+                            }
+                        });
+                    } else {
+                        swal({
+                            type: 'error',
+                            title: "Login Info",
+                            text: response.message,  // Show error message
+                            showCancelButton: false,
+                            closeOnConfirm: true
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                }
+            });
+        }
+    }
+</script>

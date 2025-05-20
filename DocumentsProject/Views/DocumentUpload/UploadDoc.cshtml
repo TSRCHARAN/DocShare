@@ -1,0 +1,115 @@
+﻿@model DocumentsProject.Web.ViewModel.UploadViewModel
+
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class="text-center mb-4">Upload Documents</h1>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-6 mb-4">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label asp-for="DocId">Document ID</label>
+                    <input asp-for="DocId" class="form-control" placeholder="Enter Document ID" id="docId" />
+                    <span asp-validation-for="DocId" class="text-danger"></span> <!-- Display validation error here -->
+                </div>
+                <br />
+                <div class="form-group">
+                    <label asp-for="Document">Select Document</label>
+                    <input type="file" asp-for="Document" class="form-control" id="documentFile" />
+                    <span asp-validation-for="Document" class="text-danger"></span> <!-- Optionally display validation error for file upload -->
+                </div>
+                <br />
+                <button type="button" class="btn btn-primary" id="uploadButton">Upload</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    $(document).ready(function () {
+
+        var userloggedin = @User.Identity.IsAuthenticated.ToString().ToLower();
+
+
+        if (!userloggedin) {
+            swal({
+                title: 'Redirect to Login',
+                text: 'Do you want to redirect to the login page?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes',
+                cancelButtonText: 'No'
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    window.location.href = '/Login/Index';  // Redirect to another page
+                }
+            });
+        }
+        // Handle form submission via AJAX
+        $('#uploadButton').click(function (e) {
+            e.preventDefault();
+
+            var docId = $('#docId').val();
+            var fileInput = $('#documentFile')[0].files[0];
+
+            // Validate form inputs
+            if (!docId || !fileInput) {
+                swal({
+                    type: 'error',
+                    title: "Upload Document Info",
+                    text: "Enter full details",  // Show error message
+                    showCancelButton: false,
+                    closeOnConfirm: true
+                });
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append('DocId', docId);
+            formData.append('Document', fileInput);
+
+            // Perform AJAX call to upload the document
+            $.ajax({
+                url: '@Url.Action("UploadDocument", "DocumentUpload")', // Adjust to your controller action
+                type: 'POST',
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    if (response.success) {
+                        swal({
+                            type: 'success',
+                            title: "Upload Document Info",
+                            text: response.message,  // Show success message
+                            showCancelButton: false,
+                            closeOnConfirm: true
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                location.reload();  // Redirect to another page
+                            }
+                        });
+                    } else {
+                        swal({
+                            type: 'error',
+                            title: "Upload Document Info",
+                            text: response.message,  // Show error message
+                            showCancelButton: false,
+                            closeOnConfirm: true
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", error);
+                }
+            });
+        });
+    });
+</script>

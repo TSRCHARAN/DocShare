@@ -1,0 +1,241 @@
+﻿@{
+    ViewData["Title"] = "SignUp";
+}
+<style>
+    .divider:after,
+    .divider:before {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: #eee;
+    }
+
+    .h-custom {
+        height: calc(100% - 73px);
+    }
+
+    @@media (max-width: 450px) {
+        .h-custom {
+            height: 100%;
+        }
+    }
+</style>
+
+<section class="vh-75">
+    <div class="container-fluid h-custom">
+        <div class="row d-flex justify-content-center align-items-center h-100">
+            <div class="col-md-9 col-lg-6 col-xl-5">
+                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-login-form/draw2.webp"
+                     class="img-fluid" alt="Sample image">
+            </div>
+            <div class="col-md-8 col-lg-6 col-xl-4 offset-xl-1">
+
+                <div class="form-floating mb-4">
+                    <h2>Sign Up</h2>
+                </div>
+
+                <!-- Step 1: Email input -->
+                <div id="step1">
+                    <div class="form-floating mb-4">
+                        <input type="email" id="emailInput" class="form-control" placeholder="Enter a valid email address">
+                        <label for="emailInput">Email address</label>
+                    </div>
+                    <button type="button" id="sendEmailBtn" class="btn btn-primary btn-block" onclick="sendEmail()">Send OTP</button>
+                </div>
+
+                <!-- Step 2: OTP input and username/password (hidden initially) -->
+                <div id="step2" style="display: none;">
+                    <div class="form-floating mb-4">
+                        <input type="text" id="otpInput" class="form-control" placeholder="Enter OTP">
+                        <label for="otpInput">Enter OTP</label>
+                    </div>
+
+                    <div class="form-floating mb-4">
+                        <input type="text" id="usernameInput" class="form-control" placeholder="Enter username">
+                        <label for="usernameInput">Username</label>
+                    </div>
+
+                    <div class="form-floating mb-4 position-relative">
+                        <input type="password" id="passwordInput" class="form-control" placeholder="Enter password">
+                        <label for="passwordInput">Password</label>
+                        <span class="position-absolute end-0 top-50 translate-middle-y me-3">
+                            <i class="fa-solid fa-eye" id="togglePassword" style="cursor: pointer;"></i>
+                        </span>
+                    </div>
+
+                    <button type="button" class="btn btn-primary btn-block" onclick="completeSignUp()">Sign Up</button>
+                </div>
+
+                <div id="result"></div>
+
+                <div id="step4">
+                    <div class="divider d-flex align-items-center my-4">
+                        <p class="text-center fw-bold mx-3 mb-0">Or</p>
+                    </div>
+
+
+                    <div class="d-flex flex-row align-items-center justify-content-center">
+                        <p class="lead fw-normal mb-0 me-3">Sign in with</p>
+
+                        <button type="button" class="btn btn-primary btn-floating mx-1" onclick="signUpWithGoogle()">
+                            <i class="fa-brands fa-google"></i>
+                        </button>
+
+                        <button type="button" class="btn btn-primary btn-floating mx-1" onclick="loginWithLinkedIn()">
+                            <i class="fab fa-linkedin-in"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    const togglePassword = document.querySelector('#togglePassword');
+    const passwordInput = document.querySelector('#passwordInput');
+
+    togglePassword.addEventListener('click', function () {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+    });
+
+    // Email validation function
+    function validateEmail(email) {
+        const re = /^[a-zA-Z0-9._%+-]+@@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        return re.test(email);
+    }
+
+    function loginWithLinkedIn() {
+        swal({
+            type: 'info',
+            title: "Login Info",
+            text: "Login with LinkedIn is under development!! Please try some other ways to Login",  // Show success message
+            showCancelButton: false,
+            closeOnConfirm: true
+        }, function (isConfirm) {
+            if (isConfirm) {
+                window.location.href = '/Login/Signup';  // Redirect to another page
+            }
+        });
+    }
+
+    // Step 1: Send OTP via email
+    function sendEmail() {
+        const email = $('#emailInput').val();
+
+        if (!email) {
+            swal({
+                type: 'error',
+                title: "SignUp Info",
+                text: "Please enter a valid email.",  // Show success message
+                showCancelButton: false,
+                closeOnConfirm: true
+            });
+            return;
+        }
+
+        // Validate email format
+        if (!validateEmail(email)) {
+            swal({
+                type: 'error',
+                title: "SignUp Info",
+                text: "Please enter a valid email format.",
+                showCancelButton: false,
+                closeOnConfirm: true
+            });
+            return;
+        }
+
+        // Send OTP AJAX call
+        $.ajax({
+            url: '@Url.Action("SendOtpForSignUp", "Login")',
+            type: 'POST',
+            data: { userEmail: email },
+            success: function (response) {
+                if (response.success) {
+                    $('#step1').hide();
+                    $('#step4').hide();
+                    $('#step2').show();
+                    swal({
+                        type: 'success',
+                        title: "SignUp Info",
+                        text: response.message,  // Show success message
+                        showCancelButton: false,
+                        closeOnConfirm: true
+                    });
+                } else {
+                    swal({
+                        type: 'error',
+                        title: "SignUp Info",
+                        text: response.message,  // Show success message
+                        showCancelButton: false,
+                        closeOnConfirm: true
+                    });
+                    //$('#result').html('<div class="alert alert-danger">Error sending OTP. Please try again.</div>');
+                }
+            }
+        });
+    }
+
+    // Step 2: Complete sign-up process
+    function completeSignUp() {
+        const otp = $('#otpInput').val();
+        const username = $('#usernameInput').val();
+        const password = $('#passwordInput').val();
+        const email = $('#emailInput').val();
+
+        if (!otp || !username || !password) {
+            swal({
+                type: 'error',
+                title: "SignUp Info",
+                text: "Please complete all fields.",  // Show success message
+                showCancelButton: false,
+                closeOnConfirm: true
+            });
+            return;
+        }
+
+        // Complete sign-up AJAX call
+        $.ajax({
+            url: '@Url.Action("SignUpUser", "Login")',
+            type: 'POST',
+            data: {
+                useremail: email,
+                otp: otp,
+                username: username,
+                password: password
+            },
+            success: function (response) {
+                if (response.success) {
+                    swal({
+                        type: 'info',
+                        title: "SignUp Info",
+                        text: response.message,
+                        showCancelButton: false,
+                        closeOnConfirm: true
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.href = '/Login/Index';
+                        }
+                    });
+                } else {
+                    swal({
+                        type: 'error',
+                        title: "SignUp Info",
+                        text: response.message,  // Show success message
+                        showCancelButton: false,
+                        closeOnConfirm: true
+                    });
+                    //$('#result').html('<div class="alert alert-danger">Invalid OTP or other details. Please try again.</div>');
+                }
+            }
+        });
+    }
+
+    function signUpWithGoogle() {
+        window.location.href = "/GoogleLogin/Index";
+    }
+</script>

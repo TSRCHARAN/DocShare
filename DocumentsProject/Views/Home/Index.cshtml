@@ -1,0 +1,10 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="container" style="min-height: 75vh; display: flex; justify-content: center; align-items: center; height: 80vh;">
+    <div class="content">
+        <button class="btn btn-primary" onclick="location.href='@Url.Action("UploadDoc", "DocumentUpload")'">Upload</button>
+        <button class="btn btn-primary" onclick="location.href='@Url.Action("DownloadDoc", "DocumentDownload")'">Download</button>
+    </div>
+</div>

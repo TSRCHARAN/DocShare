@@ -1,0 +1,76 @@
+﻿@{
+    ViewData["Title"] = "Download Document";
+}
+
+@{
+    await Html.RenderPartialAsync("_AlertBox");
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h1 class=" text-center mb-4">Download Document</h1>
+        </div>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-4 mb-4">
+            <div class="form-group">
+                <label for="docId">Document ID</label>
+                <input type="text" id="docId" name="docId" class="form-control" placeholder="Enter Document ID" required />
+            </div>
+            <br />
+            <button type="button" class="btn btn-primary" onclick="DownloadFunction()">Download</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function DownloadFunction() {
+        debugger;
+        var fileId = document.getElementById('docId').value;
+        $.ajax({
+            url: '@Url.Action("DownloadDocument", "DocumentDownload")',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(fileId),
+            success: function (data) {
+                console.log(data);
+                // Create a temporary link element
+                debugger;
+                var fileData = atob(data.fileData);
+                var blob = new Blob([fileData], { type: data.contentType });
+                var url = window.URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = data.fileName;
+
+                // Append the link to the body
+                document.body.appendChild(a);
+
+                // Trigger a click on the link to start the download
+                a.click();
+
+                // Remove the link from the body
+                document.body.removeChild(a);
+
+                // Release the object URL
+                window.URL.revokeObjectURL(url);
+            },
+            error: function (error) {
+                // Handle errors
+                console.error('Error downloading file:', error.responseText);
+                swal({ type: 'info', title: "Download file", text: "Failed to download file", showCancelButton: false, closeOnConfirm: true }, function (isConfirm) {
+                    if (isConfirm) {
+                    }
+                });
+            }
+        });
+    }
+
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

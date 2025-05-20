@@ -1,0 +1,31 @@
+body {
+    font-family: sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: mintcream;
+    /*background-color: #f0f8ff; Light blue background */
+}
+
+.header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 1rem;
+    /* background-color: #e0eefa;  Lighter blue for header */
+}
+
+    .header h1 {
+        margin: 0;
+        font-size: 2rem; /* Larger font for DocShare title */
+        color: #333; /* Darker text color */
+    }
+
+.main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
